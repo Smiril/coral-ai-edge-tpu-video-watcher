@@ -48,7 +48,7 @@ def main():
     if args.device == 'cpu':
         interpreter = tflite.Interpreter(model_path=args.model_path)
     else:
-        interpreter = tflite.Interpreter(model_path=args.model_path, experimental_delegates=[tflite.load_delegate('libedgetpu.so.1')])
+        interpreter = tflite.Interpreter(model_path=args.model_path, experimental_delegates=[tflite.load_delegate('libedgetpu.1.dylib')])
 
     interpreter.allocate_tensors()
 
