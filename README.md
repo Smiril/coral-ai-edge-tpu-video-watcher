@@ -14,3 +14,9 @@ This project provides scripts inspired by [coral.ai](https://coral.ai) to setup 
 ```
 python video.py --model_path model.tflite --label_path labels.txt --device tpu --threshold 0.5 --width 640 --height 480 --video-device 0
 ```
+
+## Links
+
+```
+https://github.com/Smiril/tflite-model-creator.git
+```
