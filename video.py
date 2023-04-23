@@ -13,7 +13,6 @@ import time
 from edgetpu.utils import image_processing
 from tensorflow.python.framework import load_library
 from tensorflow.python.platform import resource_loader
-os.environ['CUDA_VISIBLE_DEVICES'] = 'gpu'
 
 Category = collections.namedtuple('Category', ['id', 'score'])
 
@@ -24,7 +23,10 @@ def load_edgetpu_interpreter(model_path):
     edgetpu_delegate = tflite.load_delegate('libedgetpu.so.1')
     return tflite.Interpreter(model_path=model_path, experimental_delegates=[edgetpu_delegate])
 
-
+def load_gpu_interpreter(model_path):
+    os.environ['CUDA_VISIBLE_DEVICES'] = 'gpu'
+    return tflite.interpreter(model_path=model_path)
+    
 def get_output(interpreter, top_k, score_threshold):
     """Returns no more than top_k categories with score >= score_threshold."""
     scores = interpreter.get_tensor(interpreter.get_output_details()[0]['index'])
@@ -58,9 +60,11 @@ def main():
     # Load the TFLite model
     if args.device == 'cpu':
         interpreter = load_cpu_interpreter(args.model_path)
+    if args.device == 'gpu':
+        interpreter = load_gpu_interpreter(args.model_path)
     else:
         interpreter = load_edgetpu_interpreter(args.model_path)
-
+        
     interpreter.allocate_tensors()
 
     # Get input and output details
