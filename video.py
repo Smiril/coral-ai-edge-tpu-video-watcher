@@ -11,8 +11,19 @@ import operator
 import tflite_runtime.interpreter as tflite
 import time
 from edgetpu.utils import image_processing
+from tensorflow.python.framework import load_library
+from tensorflow.python.platform import resource_loader
+os.environ['CUDA_VISIBLE_DEVICES'] = 'gpu'
 
 Category = collections.namedtuple('Category', ['id', 'score'])
+
+def load_cpu_interpreter(model_path):
+    return tflite.Interpreter(model_path=model_path)
+
+def load_edgetpu_interpreter(model_path):
+    edgetpu_delegate = tflite.load_delegate('libedgetpu.1.dylib')
+    return tflite.Interpreter(model_path=model_path, experimental_delegates=[edgetpu_delegate])
+
 
 def get_output(interpreter, top_k, score_threshold):
     """Returns no more than top_k categories with score >= score_threshold."""
@@ -46,9 +57,9 @@ def main():
 
     # Load the TFLite model
     if args.device == 'cpu':
-        interpreter = tflite.Interpreter(model_path=args.model_path)
+        interpreter = load_cpu_interpreter(args.model_path)
     else:
-        interpreter = tflite.Interpreter(model_path=args.model_path, experimental_delegates=[tflite.load_delegate('libedgetpu.1.dylib')])
+        interpreter = load_edgetpu_interpreter(args.model_path)
 
     interpreter.allocate_tensors()
 
