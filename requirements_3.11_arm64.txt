@@ -1,9 +1,8 @@
-numpy==1.23.2
+numpy==1.24.3
 opencv-python<=4.7.0.72
 scikit-learn==1.2.2
-keras
-tensorboard
+keras==2.12.0
 tensorflow-macos
 tensorflow-metal
-torch==2.0.0
-torchvision==0.15.1
+torch
+torchvision
