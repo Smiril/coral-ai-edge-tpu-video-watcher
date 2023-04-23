@@ -21,7 +21,7 @@ def load_cpu_interpreter(model_path):
     return tflite.Interpreter(model_path=model_path)
 
 def load_edgetpu_interpreter(model_path):
-    edgetpu_delegate = tflite.load_delegate('libedgetpu.1.dylib')
+    edgetpu_delegate = tflite.load_delegate('libedgetpu.so.1')
     return tflite.Interpreter(model_path=model_path, experimental_delegates=[edgetpu_delegate])
 
 
