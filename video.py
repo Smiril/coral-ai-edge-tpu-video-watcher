@@ -38,6 +38,18 @@ def parse_args():
     parser.add_argument('--help', action='help', default=argparse.SUPPRESS, help='show this help message and exit')
     return parser.parse_args()
 
+def load_interpreter(model_path, device):
+    if device == 'cpu':
+         return tflite.Interpreter(model_path=model_path)
+    elif device == 'tpu':
+         edgetpu_delegate = tflite.load_delegate('libedgetpu.so.1')
+         return tflite.Interpreter(model_path=model_path, experimental_delegates=[edgetpu_delegate])
+    elif device == 'gpu':
+         os.environ['CUDA_VISIBLE_DEVICES'] = 'GPU:0'
+         return tflite.Interpreter(model_path=model_path)
+    else:
+        raise ValueError("Invalid device. Choose either 'cpu', 'tpu', or 'gpu'.")
+
 def main():
     # Parse command line arguments
     args = parse_args()
@@ -45,18 +57,11 @@ def main():
     # Load the label file
     with open(args.label_path, 'r') as f:
         labels = [line.strip() for line in f.readlines()]
-        
-    if device == 'cpu':
-        return tflite.Interpreter(model_path=model_path)
-    elif device == 'edgetpu':
-        edgetpu_delegate = tflite.load_delegate('libedgetpu.so.1')
-        return tflite.Interpreter(model_path=model_path, experimental_delegates=[edgetpu_delegate])
-    elif device == 'gpu':
-        os.environ['CUDA_VISIBLE_DEVICES'] = 'GPU:0'
-        return tflite.Interpreter(model_path=model_path)
-    else:
-        raise ValueError("Invalid device. Choose either 'cpu', 'edgetpu', or 'gpu'.")
-        
+
+    # Load the interpreter
+    interpreter = load_interpreter(args.model_path, args.device)
+
+    # Allocate tensors
     interpreter.allocate_tensors()
 
     # Get input and output details
