@@ -16,16 +16,17 @@ from tensorflow.python.platform import resource_loader
 
 Category = collections.namedtuple('Category', ['id', 'score'])
 
-def load_cpu_interpreter(model_path):
-    return tflite.Interpreter(model_path=model_path)
-
-def load_edgetpu_interpreter(model_path):
-    edgetpu_delegate = tflite.load_delegate('libedgetpu.so.1')
-    return tflite.Interpreter(model_path=model_path, experimental_delegates=[edgetpu_delegate])
-
-def load_gpu_interpreter(model_path):
-    os.environ['CUDA_VISIBLE_DEVICES'] = 'gpu'
-    return tflite.interpreter(model_path=model_path)
+def load_interpreter(model_path, device):
+    if device == 'cpu':
+        return tflite.Interpreter(model_path=model_path)
+    elif device == 'edgetpu':
+        edgetpu_delegate = tflite.load_delegate('libedgetpu.so.1')
+        return tflite.Interpreter(model_path=model_path, experimental_delegates=[edgetpu_delegate])
+    elif device == 'gpu':
+        os.environ['CUDA_VISIBLE_DEVICES'] = 'GPU:0'
+        return tflite.Interpreter(model_path=model_path)
+    else:
+        raise ValueError("Invalid device. Choose either 'cpu', 'edgetpu', or 'gpu'.")
     
 def get_output(interpreter, top_k, score_threshold):
     """Returns no more than top_k categories with score >= score_threshold."""
@@ -58,12 +59,7 @@ def main():
         labels = [line.strip() for line in f.readlines()]
 
     # Load the TFLite model
-    if args.device == 'cpu':
-        interpreter = load_cpu_interpreter(args.model_path)
-    if args.device == 'gpu':
-        interpreter = load_gpu_interpreter(args.model_path)
-    else:
-        interpreter = load_edgetpu_interpreter(args.model_path)
+    interpreter = load_interpreter(args.model_path)
         
     interpreter.allocate_tensors()
 
