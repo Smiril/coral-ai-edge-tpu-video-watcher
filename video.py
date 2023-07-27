@@ -15,7 +15,6 @@ from tensorflow.python.framework import load_library
 from tensorflow.python.platform import resource_loader
 
 Category = collections.namedtuple('Category', ['id', 'score'])
-<<<<<<< HEAD
 
 def load_cpu_interpreter(model_path):
     return tflite.Interpreter(model_path=model_path)
@@ -27,8 +26,6 @@ def load_edgetpu_interpreter(model_path):
 def load_gpu_interpreter(model_path):
     os.environ['CUDA_VISIBLE_DEVICES'] = 'gpu'
     return tflite.interpreter(model_path=model_path)
-=======
->>>>>>> af4644f97fc0ef75166b8dcf070a6dcb20fcc53e
     
 def get_output(interpreter, top_k, score_threshold):
     """Returns no more than top_k categories with score >= score_threshold."""
