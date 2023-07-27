@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.11
+#!/usr/bin/env python3.10
 import os
 import argparse
 import cv2
@@ -15,6 +15,7 @@ from tensorflow.python.framework import load_library
 from tensorflow.python.platform import resource_loader
 
 Category = collections.namedtuple('Category', ['id', 'score'])
+<<<<<<< HEAD
 
 def load_cpu_interpreter(model_path):
     return tflite.Interpreter(model_path=model_path)
@@ -26,6 +27,8 @@ def load_edgetpu_interpreter(model_path):
 def load_gpu_interpreter(model_path):
     os.environ['CUDA_VISIBLE_DEVICES'] = 'gpu'
     return tflite.interpreter(model_path=model_path)
+=======
+>>>>>>> af4644f97fc0ef75166b8dcf070a6dcb20fcc53e
     
 def get_output(interpreter, top_k, score_threshold):
     """Returns no more than top_k categories with score >= score_threshold."""
@@ -44,10 +47,22 @@ def parse_args():
     parser.add_argument('--threshold', type=float, default=0.5, help='Classification threshold')
     parser.add_argument('--width', type=int, default=640, help='Width of video frame')
     parser.add_argument('--height', type=int, default=480, help='Height of video frame')
-    parser.add_argument('--device', type=str, default='cpu', choices=['cpu', 'tpu'], help='Device to use')
+    parser.add_argument('--device', type=str, default='cpu', choices=['cpu', 'tpu', 'gpu'], help='Device to use')
     parser.add_argument('--video_device', type=int, default=0, help='Index of video capture device')
     parser.add_argument('--help', action='help', default=argparse.SUPPRESS, help='show this help message and exit')
     return parser.parse_args()
+
+def load_interpreter(model_path, device):
+    if device == 'cpu':
+         return tflite.Interpreter(model_path=model_path)
+    elif device == 'tpu':
+         edgetpu_delegate = tflite.load_delegate('libedgetpu.so.1')
+         return tflite.Interpreter(model_path=model_path, experimental_delegates=[edgetpu_delegate])
+    elif device == 'gpu':
+         os.environ['CUDA_VISIBLE_DEVICES'] = 'GPU:0'
+         return tflite.Interpreter(model_path=model_path)
+    else:
+        raise ValueError("Invalid device. Choose either 'cpu', 'tpu', or 'gpu'.")
 
 def main():
     # Parse command line arguments
@@ -57,14 +72,10 @@ def main():
     with open(args.label_path, 'r') as f:
         labels = [line.strip() for line in f.readlines()]
 
-    # Load the TFLite model
-    if args.device == 'cpu':
-        interpreter = load_cpu_interpreter(args.model_path)
-    if args.device == 'gpu':
-        interpreter = load_gpu_interpreter(args.model_path)
-    else:
-        interpreter = load_edgetpu_interpreter(args.model_path)
-        
+    # Load the interpreter
+    interpreter = load_interpreter(args.model_path, args.device)
+
+    # Allocate tensors
     interpreter.allocate_tensors()
 
     # Get input and output details
