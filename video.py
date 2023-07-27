@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3.11
 import os
 import argparse
 import cv2
@@ -20,7 +20,7 @@ def load_cpu_interpreter(model_path):
     return tflite.Interpreter(model_path=model_path)
 
 def load_edgetpu_interpreter(model_path):
-    edgetpu_delegate = tflite.load_delegate('libedgetpu.so.1')
+    edgetpu_delegate = tflite.load_delegate('libedgetpu.so.1',options={"device":"usb:0","device":"usb:1"})
     return tflite.Interpreter(model_path=model_path, experimental_delegates=[edgetpu_delegate])
 
 def load_gpu_interpreter(model_path):
