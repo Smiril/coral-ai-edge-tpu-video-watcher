@@ -27,7 +27,7 @@ def load_edgetpu_interpreter(model_path):
 def load_gpu_interpreter(model_path):
     	if os.environ['CUDA_VISIBLE_DEVICES'] = 'gpu'
     	if os.environ['METAL_VISIBLE_DEVICES'] = 'mps'
-    	if os.environ['NEURAL_VISIBLE_DEVICES'] = 'npu'
+    	if os.environ['plaidML'] = 'npu'
     	else: exit 1
 	return tflite.interpreter(model_path=model_path)
     
@@ -66,7 +66,7 @@ def load_interpreter(model_path, device):
          os.environ['METAL_VISIBLE_DEVICES'] = 'MPS:0'
          return tflite.Interpreter(model_path=model_path)
     elif device == 'npu':
-         os.environ['NEURAL_VISIBLE_DEVICES'] = 'CPU:1'
+         os.environ['plaidML'] = 'CPU:1'
          return tflite.Interpreter(model_path=model_path)
     else:
         raise ValueError("Invalid device. Choose either 'cpu', 'tpu', 'gpu', 'mps' or 'npu'.")
