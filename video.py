@@ -27,7 +27,7 @@ def load_edgetpu_interpreter(model_path):
 def load_gpu_interpreter(model_path):
     	if os.environ['CUDA_VISIBLE_DEVICES'] = 'gpu'
     	if os.environ['METAL_VISIBLE_DEVICES'] = 'mps'
-        if os.environ['NEURAL_VISIBLE_DEVICES'] = 'npu'
+    	if os.environ['NEURAL_VISIBLE_DEVICES'] = 'npu'
     	else: exit 1
 	return tflite.interpreter(model_path=model_path)
     
