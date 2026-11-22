@@ -48,7 +48,7 @@ def parse_args():
     parser.add_argument('--threshold', type=float, default=0.5, help='Classification threshold')
     parser.add_argument('--width', type=int, default=640, help='Width of video frame')
     parser.add_argument('--height', type=int, default=480, help='Height of video frame')
-    parser.add_argument('--device', type=str, default='cpu', choices=['cpu', 'tpu', 'gpu', 'mps'], help='Device to use')
+    parser.add_argument('--device', type=str, default='cpu', choices=['cpu', 'tpu', 'gpu', 'mps', 'npu'], help='Device to use')
     parser.add_argument('--video_device', type=int, default=0, help='Index of video capture device')
     parser.add_argument('--help', action='help', default=argparse.SUPPRESS, help='show this help message and exit')
     return parser.parse_args()
