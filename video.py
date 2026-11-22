@@ -26,8 +26,9 @@ def load_edgetpu_interpreter(model_path):
 
 def load_gpu_interpreter(model_path):
     	if os.environ['CUDA_VISIBLE_DEVICES'] = 'gpu'
-    	else if os.environ['device'] = 'mps'
-    	else exit 1
+    	if os.environ['METAL_VISIBLE_DEVICES'] = 'mps'
+        if os.environ['NEURAL_VISIBLE_DEVICES'] = 'npu'
+    	else: exit 1
 	return tflite.interpreter(model_path=model_path)
     
 def get_output(interpreter, top_k, score_threshold):
@@ -47,7 +48,7 @@ def parse_args():
     parser.add_argument('--threshold', type=float, default=0.5, help='Classification threshold')
     parser.add_argument('--width', type=int, default=640, help='Width of video frame')
     parser.add_argument('--height', type=int, default=480, help='Height of video frame')
-    parser.add_argument('--device', type=str, default='cpu', choices=['cpu', 'tpu', 'gpu'], help='Device to use')
+    parser.add_argument('--device', type=str, default='cpu', choices=['cpu', 'tpu', 'gpu', 'mps'], help='Device to use')
     parser.add_argument('--video_device', type=int, default=0, help='Index of video capture device')
     parser.add_argument('--help', action='help', default=argparse.SUPPRESS, help='show this help message and exit')
     return parser.parse_args()
@@ -59,10 +60,16 @@ def load_interpreter(model_path, device):
          edgetpu_delegate = tflite.load_delegate('libedgetpu.so.1')
          return tflite.Interpreter(model_path=model_path, experimental_delegates=[edgetpu_delegate])
     elif device == 'gpu':
-         os.environ['CUDA_VISIBLE_DEVICES'] = 'GPU:0'
+         os.environ['CUDA_VISIBLE_DEVICES'] = 'GPU:0,1,2,3,4,5,6,7'
+         return tflite.Interpreter(model_path=model_path)
+    elif device == 'mps':
+         os.environ['METAL_VISIBLE_DEVICES'] = 'MPS:0'
+         return tflite.Interpreter(model_path=model_path)
+    elif device == 'npu':
+         os.environ['NEURAL_VISIBLE_DEVICES'] = 'CPU:1'
          return tflite.Interpreter(model_path=model_path)
     else:
-        raise ValueError("Invalid device. Choose either 'cpu', 'tpu', or 'gpu'.")
+        raise ValueError("Invalid device. Choose either 'cpu', 'tpu', 'gpu', 'mps' or 'npu'.")
 
 def main():
     # Parse command line arguments
