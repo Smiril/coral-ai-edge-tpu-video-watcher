@@ -25,10 +25,15 @@ def load_edgetpu_interpreter(model_path):
     return tflite.Interpreter(model_path=model_path, experimental_delegates=[edgetpu_delegate])
 
 def load_gpu_interpreter(model_path):
-    	if os.environ['CUDA_VISIBLE_DEVICES'] = 'gpu'
-    	if os.environ['METAL_VISIBLE_DEVICES'] = 'mps'
-    	if os.environ['plaidML'] = 'npu'
-    	else: exit 1
+    os.environ['CUDA_VISIBLE_DEVICES'] = 'gpu'
+	return tflite.interpreter(model_path=model_path)
+
+def load_npu_interpreter(model_path):
+    os.environ['plaidML'] = 'npu'
+	return tflite.interpreter(model_path=model_path)
+    
+def load_mps_interpreter(model_path):
+    os.environ['METAL_VISIBLE_DEVICES'] = 'mps'
 	return tflite.interpreter(model_path=model_path)
     
 def get_output(interpreter, top_k, score_threshold):
