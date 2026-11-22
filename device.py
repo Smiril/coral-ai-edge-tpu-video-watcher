@@ -17,7 +17,7 @@ class device:
         gpu_idxs = [0]
         gpu_names = ['mps']
         gpu_compute_caps = [128]
-        gpu_vram_gb = [256]
+        gpu_vram_gb = [384]
         allow_growth = True
         use_fp16 = False
         cpu_only = False
