@@ -34,7 +34,7 @@ def load_mps_interpreter(model_path):
 	return tflite.interpreter(model_path=model_path)
 
 def load_npu_interpreter(model_path):
-    os.environ['ANE_VISIBLE_DEVICE'] = 'npu'
+    os.environ['CPU_AND_NE'] = 'npu'
 	return tflite.interpreter(model_path=model_path)
         
 def get_output(interpreter, top_k, score_threshold):
@@ -72,7 +72,7 @@ def load_interpreter(model_path, device):
          os.environ['METAL_VISIBLE_DEVICES'] = 'MPS:0'
          return tflite.Interpreter(model_path=model_path)
     elif device == 'npu':
-         os.environ['ANE_VISIBLE_DEVICE'] = 'CPU:1'
+         os.environ['CPU_AND_NE'] = 'CPU:1'
          return tflite.Interpreter(model_path=model_path)
     else:
         raise ValueError("Invalid device. Choose either 'cpu', 'tpu', 'gpu', 'mps' or 'npu'.")
