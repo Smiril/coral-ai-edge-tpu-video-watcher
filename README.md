@@ -12,7 +12,7 @@ This project provides scripts inspired by [coral.ai](https://coral.ai) to setup 
 4. ```make DOCKER_IMAGE=debian:bullseye DOCKER_CPUS="k8 armv7a aarch64" DOCKER_TARGETS=tests docker-build```
 ## Run the Code
 ```
-python video.py --model_path model.tflite --label_path labels.txt --device tpu --threshold 0.5 --width 640 --height 480 --video-device 0
+python video.py --model_path model.tflite --label_path labels.txt --device cpu --threshold 0.5 --width 3840 --height 2160 --fps 30 --video-device 0
 ```
 
 ** • --device cpu / --device gpu → use model.tflite (float32) **
