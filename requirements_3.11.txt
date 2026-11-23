@@ -1,6 +1,6 @@
 numpy>=1.24.0,<2.0.0
 opencv-python>=4.8.0
 Pillow>=10.0.0
-coremltools>=7.1; sys_platform == 'darwin'
-tensorflow>=2.15.0; sys_platform == 'darwin'
-tflite-runtime>=2.14.0; sys_platform != 'darwin'
+coremltools>=7.1
+tensorflow>=2.15.0
+tflite-runtime>=2.14.0
