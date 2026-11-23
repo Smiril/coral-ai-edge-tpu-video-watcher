@@ -111,7 +111,7 @@ def load_edgetpu_interpreter(model_path):
   return tflite.Interpreter(model_path=model_path, experimental_delegates=[edgetpu_delegate])
 
 def load_gpu_interpreter(model_path):
-  os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+  os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2,3,4,5,6,7'
   return tflite.Interpreter(model_path=model_path)
 
 def load_mps_interpreter(model_path):
