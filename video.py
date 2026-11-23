@@ -28,6 +28,7 @@ try:
 except ImportError:
   ax_rt = None
 
+Category = collections.namedtuple('Category', ['id', 'score'])
 
 class AxeleraInterpreterAdapter:
   """Simuliert die tflite.Interpreter-API für die Axelera Metis AIPU (.axm / .axmodel)."""
@@ -76,8 +77,6 @@ class AxeleraInterpreterAdapter:
 
   def get_tensor(self, index):
     return self._output_tensor
-
-Category = collections.namedtuple('Category', ['id', 'score'])
 
 
 class CoreMLInterpreterAdapter:
