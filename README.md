@@ -15,11 +15,11 @@ This project provides scripts inspired by [coral.ai](https://coral.ai) to setup 
 python video.py --model_path model.tflite --label_path labels.txt --device tpu --threshold 0.5 --width 640 --height 480 --video-device 0
 ```
 
-## • --device cpu / --device gpu → use model.tflite (float32)
+** • --device cpu / --device gpu → use model.tflite (float32) **
 
-## • --device tpu → use model_int8_edgetpu.tflite (uint8 / int8, for once edgetpu_compiler-run)
+** • --device tpu → use model_int8_edgetpu.tflite (uint8 / int8, for once edgetpu_compiler-run) **
 
-## • --device mps / --device npu → use model.mlpackage (for Apple Neural Engine)
+** • --device mps / --device npu → use model.mlpackage (for Apple MetalGPU AND Neural Engine) **
 
 
 ## Links
