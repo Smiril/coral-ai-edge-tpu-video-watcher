@@ -182,14 +182,14 @@ def main():
   input_details = interpreter.get_input_details()
   output_details = interpreter.get_output_details()
 
-  # Kamera initialisieren & auf 30 FPS konfigurieren
+  # Kamera initialisieren & auf $var FPS konfigurieren
   cap = cv2.VideoCapture(args.video_device)
   cap.set(cv2.CAP_PROP_FRAME_WIDTH, args.width)
   cap.set(cv2.CAP_PROP_FRAME_HEIGHT, args.height)
   cap.set(cv2.CAP_PROP_FPS, args.fps)
 
   target_fps = args.fps
-  frame_duration = 1.0 / target_fps  # 0.0333 Sekunden (33.33 ms)
+  frame_duration = 1.0 / target_fps  # 30 FPS 0.0333 Sekunden (33.33 ms)
   fps_history = collections.deque(maxlen=args.fps)
 
   while True:
