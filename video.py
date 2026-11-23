@@ -222,7 +222,7 @@ def main():
 
     # FPS berechnen
     elapsed = time.perf_counter() - loop_start
-    # Wartezeit für cv2.waitKey berechnen, um 30 FPS nicht zu überschreiten
+    # Wartezeit für cv2.waitKey berechnen, um $var FPS nicht zu überschreiten
     remaining_ms = max(1, int((frame_duration - elapsed) * 1000))
 
     key = cv2.waitKey(remaining_ms) & 0xFF
@@ -250,8 +250,6 @@ def main():
 
   cap.release()
   cv2.destroyAllWindows()
-
-
 
 if __name__ == '__main__':
   main()
