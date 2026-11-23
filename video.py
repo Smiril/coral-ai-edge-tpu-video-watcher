@@ -240,7 +240,7 @@ def main():
           labels[top_result.id]
           if top_result.id < len(labels)
           else f'ID {top_result.id}'
-          )
+      )
       label_text = f'{label}: {top_result.score:.2f}'
       cv2.putText(frame,label_text,(10, 65),cv2.FONT_HERSHEY_SIMPLEX,0.9,(0, 0, 255),2,)
 
