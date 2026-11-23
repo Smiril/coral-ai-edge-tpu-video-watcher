@@ -19,24 +19,30 @@ from tensorflow.python.platform import resource_loader
 
 Category = collections.namedtuple('Category', ['id', 'score'])
 
+# import tflite_runtime.interpreter as tflite  # oder tensorflow.lite as tflite
+
 def load_cpu_interpreter(model_path):
-    return tflite.Interpreter(model_path=model_path)
+  return tflite.Interpreter(model_path=model_path)
 
 def load_edgetpu_interpreter(model_path):
-    edgetpu_delegate = tflite.load_delegate('libedgetpu.so.1',options={"device":"usb:0","device":"usb:1"})
-    return tflite.Interpreter(model_path=model_path, experimental_delegates=[edgetpu_delegate])
+  # "usb" wählt automatisch die erste freie EdgeTPU (oder "usb:0" / "usb:1" einzeln)
+  edgetpu_delegate = tflite.load_delegate("libedgetpu.so.1", options={"device": "usb"})
+  return tflite.Interpreter(model_path=model_path, experimental_delegates=[edgetpu_delegate])
 
 def load_gpu_interpreter(model_path):
-    os.environ['CUDA_VISIBLE_DEVICES'] = 'gpu'
-	return tflite.interpreter(model_path=model_path)
+  # Funktioniert nur unter Linux/Windows mit NVIDIA-GPU & passendem GPU-Delegate
+  os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+  return tflite.Interpreter(model_path=model_path)
 
 def load_mps_interpreter(model_path):
-    os.environ[mx.default_device()] = 'mps'
-	return tflite.interpreter(model_path=model_path)
+  # Nutzt auf macOS die Apple Metal GPU (erfordert .mlpackage statt .tflite)
+  coreml_path = model_path.replace(".tflite", ".mlpackage")
+  return ct.models.MLModel(coreml_path, compute_units=ct.ComputeUnit.CPU_AND_GPU)
 
 def load_npu_interpreter(model_path):
-    os.environ[ct.ComputeUnit.CPU_AND_NE] = 'npu'
-	return tflite.interpreter(model_path=model_path)
+  # Nutzt auf macOS die Apple Neural Engine (erfordert .mlpackage statt .tflite)
+  coreml_path = model_path.replace(".tflite", ".mlpackage")
+  return ct.models.MLModel(coreml_path, compute_units=ct.ComputeUnit.CPU_AND_NE)
         
 def get_output(interpreter, top_k, score_threshold):
     """Returns no more than top_k categories with score >= score_threshold."""
@@ -60,23 +66,49 @@ def parse_args():
     parser.add_argument('--help', action='help', default=argparse.SUPPRESS, help='show this help message and exit')
     return parser.parse_args()
 
-def load_interpreter(model_path, device):
-    if device == 'cpu':
-         return tflite.Interpreter(model_path=model_path)
-    elif device == 'tpu':
-         edgetpu_delegate = tflite.load_delegate('libedgetpu.so.1')
-         return tflite.Interpreter(model_path=model_path, experimental_delegates=[edgetpu_delegate])
-    elif device == 'gpu':
-         os.environ['CUDA_VISIBLE_DEVICES'] = 'GPU:0,1,2,3,4,5,6,7'
-         return tflite.Interpreter(model_path=model_path)
-    elif device == 'mps':
-         os.environ[mx.default_device()] = 'MPS:0'
-         return tflite.Interpreter(model_path=model_path)
-    elif device == 'npu':
-         os.environ[ct.ComputeUnit.CPU_AND_NE] = 'CPU:1'
-         return tflite.Interpreter(model_path=model_path)
-    else:
-        raise ValueError("Invalid device. Choose either 'cpu', 'tpu', 'gpu', 'mps' or 'npu'.")
+# Je nach Installation: import ai_edge_litert.interpreter as tflite oder import tensorflow.lite as tflite
+
+class CoreMLWrapper:
+  """Macht ein CoreML-Modell kompatibel zur TFLite-Interpreter-Logik."""
+
+  def __init__(self, model_path, compute_units):
+    self.model = ct.models.MLModel(model_path, compute_units=compute_units)
+    spec = self.model.get_spec()
+    self.input_name = spec.description.input[0].name
+    self.output_name = spec.description.output[0].name
+
+  def predict(self, input_array):
+    # CoreML erwartet ein Dictionary mit dem Input-Namen
+    res = self.model.predict({self.input_name: input_array})
+    return res[self.output_name]
+
+
+def get_model(device, model_path):
+  if device == "cpu":
+    return tflite.Interpreter(model_path=model_path)
+
+  elif device == "tpu":
+    edgetpu_delegate = tflite.load_delegate("libedgetpu.so.1")
+    return tflite.Interpreter(model_path=model_path, experimental_delegates=[edgetpu_delegate])
+
+  elif device == "gpu":
+    # Funktioniert nur unter Linux/Windows mit NVIDIA GPU + TFLite GPU-Delegate
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    return tflite.Interpreter(model_path=model_path)
+
+  elif device == "mps":
+    # Nutzt auf dem Mac CPU + Metal GPU (erfordert .mlpackage statt .tflite)
+    coreml_path = model_path.replace(".tflite", ".mlpackage")
+    return CoreMLWrapper(coreml_path, compute_units=ct.ComputeUnit.CPU_AND_GPU)
+
+  elif device == "npu":
+    # Nutzt auf dem Mac CPU + Apple Neural Engine (erfordert .mlpackage statt .tflite)
+    coreml_path = model_path.replace(".tflite", ".mlpackage")
+    return CoreMLWrapper(coreml_path, compute_units=ct.ComputeUnit.CPU_AND_NE)
+
+  else:
+    raise ValueError("Invalid device. Choose either 'cpu', 'tpu', 'gpu', 'mps' or 'npu'.")
+
 
 def main():
     # Parse command line arguments
