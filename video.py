@@ -162,7 +162,7 @@ def parse_args():
   parser.add_argument('--threshold', type=float, default=0.5, help='Classification threshold')
   parser.add_argument('--width', type=int, default=3840, help='Width of video frame')
   parser.add_argument('--height', type=int, default=2160, help='Height of video frame')
-  parser.add_argument('--fps', type=float, default=30.0,choices=['30.0', '60.0', '120.0', '240.0'],help='Video fps to use')
+  parser.add_argument('--fps', type=int, default=30,choices=['30', '60', '120', '240'],help='Video fps to use')
   parser.add_argument('--device',type=str,default='cpu',choices=['cpu', 'tpu', 'gpu', 'mps', 'npu'],help='Device to use',)
   parser.add_argument('--video_device',type=int,default=0,help='Index of video capture device',)
   parser.add_argument('--help',action='help',default=argparse.SUPPRESS,help='show this help message and exit',)
@@ -190,7 +190,7 @@ def main():
 
   target_fps = args.fps
   frame_duration = 1.0 / target_fps  # 0.0333 Sekunden (33.33 ms)
-  fps_history = collections.deque(maxlen=args.fps)
+  fps_history = collections.deque(maxlen=240)
 
   while True:
     loop_start = time.perf_counter()
