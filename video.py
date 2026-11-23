@@ -102,13 +102,26 @@ class CoreMLInterpreterAdapter:
   def get_tensor(self, index):
     return self._output_tensor
 
+def preprocess_frame(frame, target_shape, dtype):
+  # OpenCV liefert BGR -> für MobileNetV2 in RGB umwandeln
+  frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+  img = np.expand_dims(frame_rgb, axis=0)
+
+  # Int8-quantisiertes TFLite-Modell (z.B. EdgeTPU) erwartet uint8 (0..255)
+  if dtype == np.uint8:
+    return img.astype(np.uint8)
+
+  # Float32-Modell (CPU, GPU, CoreML NPU/MPS) wurde mit rescale=1./255 trainiert
+  return img.astype(np.float32) / 255.0
+
 # --- Deine einzelnen Loader-Funktionen ---
 def load_cpu_interpreter(model_path):
   return tflite.Interpreter(model_path=model_path)
 
 def load_edgetpu_interpreter(model_path):
-  edgetpu_delegate = tflite.load_delegate('libedgetpu.so.1', options={'device': 'usb0','device': 'usb1'})
-  return tflite.Interpreter(model_path=model_path, experimental_delegates=[edgetpu_delegate])
+  edgetpu_path = model_path.replace('.tflite', '_int8_edgetpu.tflite')
+	edgetpu_delegate = tflite.load_delegate('libedgetpu.so.1', options={'device': 'usb0','device': 'usb1'})
+  return tflite.Interpreter(model_path=edgetpu_path, experimental_delegates=[edgetpu_delegate])
 
 def load_gpu_interpreter(model_path):
   os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2,3,4,5,6,7'
