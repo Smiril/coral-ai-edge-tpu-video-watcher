@@ -34,9 +34,7 @@ class CoreMLInterpreterAdapter:
 
   def __init__(self, model_path, compute_units):
     if ct is None:
-      raise ImportError(
-          'coremltools ist nicht installiert (pip install coremltools).'
-      )
+      raise ImportError('coremltools ist nicht installiert (pip install coremltools).')
 
     coreml_path = model_path.replace('.tflite', '.mlpackage')
     self.model = ct.models.MLModel(coreml_path, compute_units=compute_units)
