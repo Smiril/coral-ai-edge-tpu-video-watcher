@@ -8,7 +8,9 @@ This project provides scripts inspired by [coral.ai](https://coral.ai) to setup 
 
 1. Clone this repository (`git clone https://github.com/Smiril/coral-ai-edge-tpu-video-watcher.git`)
 2. Run script `./setup.sh` to create virtual env and install necessary Python dependencies. This may take several minutes to run.
-3. Run the commands from [coral.ai](https://coral.ai) to setup finaly.
+3. 
+	1) Run the commands from [coral.ai](https://coral.ai) to setup finaly.
+	2) Run the commands from [axelera.ai](https://axelera.ai) to setup finaly.
 4. ```make DOCKER_IMAGE=debian:bullseye DOCKER_CPUS="k8 armv7a aarch64" DOCKER_TARGETS=tests docker-build```
 ## Run the Code
 ```
