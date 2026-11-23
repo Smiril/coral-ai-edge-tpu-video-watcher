@@ -181,29 +181,57 @@ def main():
   input_details = interpreter.get_input_details()
   output_details = interpreter.get_output_details()
 
-  # Kamera initialisieren
+  # Kamera initialisieren & auf 30 FPS konfigurieren
   cap = cv2.VideoCapture(args.video_device)
   cap.set(cv2.CAP_PROP_FRAME_WIDTH, args.width)
   cap.set(cv2.CAP_PROP_FRAME_HEIGHT, args.height)
+  cap.set(cv2.CAP_PROP_FPS, 30)
+
+  target_fps = 30.0
+  frame_duration = 1.0 / target_fps  # 0.0333 Sekunden (33.33 ms)
+  fps_history = collections.deque(maxlen=30)
 
   while True:
+    loop_start = time.perf_counter()
+
     ret, frame = cap.read()
     if not ret:
       break
 
-    # Frame vorbereiten
+    # Frame vorbereiten (inkl. BGR->RGB & uint8/float32-Erkennung)
     target_w = input_details['shape']
     target_h = input_details['shape']
     resized_frame = cv2.resize(frame, (target_w, target_h))
 
-    input_data = preprocess_frame(resized_frame, input_details['shape'][1:3], input_details['dtype'])
+    frame_rgb = cv2.cvtColor(resized_frame, cv2.COLOR_BGR2RGB)
+    img = np.expand_dims(frame_rgb, axis=0)
+    if input_details['dtype'] == np.uint8:
+      input_data = img.astype(np.uint8)
+    else:
+      input_data = img.astype(np.float32) / 255.0
 
-    # Inferenz ausführen
+    # Inferenzzeit exakt messen
+    inf_start = time.perf_counter()
     interpreter.set_tensor(input_details['index'], input_data)
     interpreter.invoke()
+    inf_time_ms = (time.perf_counter() - inf_start) * 1000.0
 
-    # Ergebnisse über deine get_output-Funktion abrufen
+    # Ergebnisse abrufen
     results = get_output(interpreter, top_k=1, score_threshold=args.threshold)
+
+    # FPS berechnen
+    elapsed = time.perf_counter() - loop_start
+    # Wartezeit für cv2.waitKey berechnen, um 30 FPS nicht zu überschreiten
+    remaining_ms = max(1, int((frame_duration - elapsed) * 1000))
+
+    key = cv2.waitKey(remaining_ms) & 0xFF
+    total_loop_time = time.perf_counter() - loop_start
+    fps_history.append(1.0 / max(total_loop_time, 1e-6))
+    current_fps = sum(fps_history) / len(fps_history)
+
+    # Overlay zeichnen (Label + Hardware + FPS + Inferenzzeit)
+    status_text = (f'{args.device.upper()} | {current_fps:.1f} FPS | {inf_time_ms:.1f} ms')
+    cv2.putText(frame,status_text,(10, 30),cv2.FONT_HERSHEY_SIMPLEX,0.7,(0, 255, 0),2,)
 
     if results:
       top_result = results
@@ -211,16 +239,17 @@ def main():
           labels[top_result.id]
           if top_result.id < len(labels)
           else f'ID {top_result.id}'
-      )
-      label_text = f'{label}: {top_result.score:.2f} ({args.device.upper()})'
-      cv2.putText(frame, label_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+          )
+      label_text = f'{label}: {top_result.score:.2f}'
+      cv2.putText(frame,label_text,(10, 65),cv2.FONT_HERSHEY_SIMPLEX,0.9,(0, 0, 255),2,)
 
     cv2.imshow('Frame', frame)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    if key == ord('q'):
       break
 
   cap.release()
   cv2.destroyAllWindows()
+
 
 
 if __name__ == '__main__':
