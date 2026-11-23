@@ -102,13 +102,12 @@ class CoreMLInterpreterAdapter:
   def get_tensor(self, index):
     return self._output_tensor
 
-
 # --- Deine einzelnen Loader-Funktionen ---
 def load_cpu_interpreter(model_path):
   return tflite.Interpreter(model_path=model_path)
 
 def load_edgetpu_interpreter(model_path):
-  edgetpu_delegate = tflite.load_delegate('libedgetpu.so.1', options={'device': 'usb'})
+  edgetpu_delegate = tflite.load_delegate('libedgetpu.so.1', options={'device': 'usb0','device': 'usb1'})
   return tflite.Interpreter(model_path=model_path, experimental_delegates=[edgetpu_delegate])
 
 def load_gpu_interpreter(model_path):
