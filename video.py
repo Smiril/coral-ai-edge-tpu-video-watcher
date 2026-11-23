@@ -102,18 +102,6 @@ class CoreMLInterpreterAdapter:
   def get_tensor(self, index):
     return self._output_tensor
 
-def preprocess_frame(frame, target_shape, dtype):
-  # OpenCV liefert BGR -> für MobileNetV2 in RGB umwandeln
-  frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-  img = np.expand_dims(frame_rgb, axis=0)
-
-  # Int8-quantisiertes TFLite-Modell (z.B. EdgeTPU) erwartet uint8 (0..255)
-  if dtype == np.uint8:
-    return img.astype(np.uint8)
-
-  # Float32-Modell (CPU, GPU, CoreML NPU/MPS) wurde mit rescale=1./255 trainiert
-  return img.astype(np.float32) / 255.0
-
 # --- Deine einzelnen Loader-Funktionen ---
 def load_cpu_interpreter(model_path):
   return tflite.Interpreter(model_path=model_path)
@@ -156,16 +144,16 @@ def get_output(interpreter, top_k, score_threshold):
   return sorted(categories, key=operator.itemgetter(1), reverse=True)
 
 def preprocess_frame(frame, target_shape, dtype):
-  """Fallback für image_processing.reshape_and_rescale, falls edgetpu nicht installiert ist."""
-  if image_processing is not None:
-    return image_processing.reshape_and_rescale(
-        np.array(frame), target_shape
-    ).astype(dtype)
+  # OpenCV liefert BGR -> für MobileNetV2 in RGB umwandeln
+  frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+  img = np.expand_dims(frame_rgb, axis=0)
 
-  img = np.expand_dims(frame, axis=0)
-  if dtype == np.float32:
-    return (img.astype(np.float32) / 127.5) - 1.0
-  return img.astype(dtype)
+  # Int8-quantisiertes TFLite-Modell (z.B. EdgeTPU) erwartet uint8 (0..255)
+  if dtype == np.uint8:
+    return img.astype(np.uint8)
+
+  # Float32-Modell (CPU, GPU, CoreML NPU/MPS) wurde mit rescale=1./255 trainiert
+  return img.astype(np.float32) / 255.0
 
 def parse_args():
   parser = argparse.ArgumentParser(description='Real-time image classification', add_help=False)
