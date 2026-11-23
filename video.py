@@ -107,7 +107,6 @@ class CoreMLInterpreterAdapter:
 def load_cpu_interpreter(model_path):
   return tflite.Interpreter(model_path=model_path)
 
-
 def load_edgetpu_interpreter(model_path):
   edgetpu_delegate = tflite.load_delegate('libedgetpu.so.1', options={'device': 'usb'})
   return tflite.Interpreter(model_path=model_path, experimental_delegates=[edgetpu_delegate])
@@ -116,10 +115,8 @@ def load_gpu_interpreter(model_path):
   os.environ['CUDA_VISIBLE_DEVICES'] = '0'
   return tflite.Interpreter(model_path=model_path)
 
-
 def load_mps_interpreter(model_path):
   return CoreMLInterpreterAdapter(model_path, compute_units=ct.ComputeUnit.CPU_AND_GPU)
-
 
 def load_npu_interpreter(model_path):
   return CoreMLInterpreterAdapter(model_path, compute_units=ct.ComputeUnit.CPU_AND_NE)
@@ -136,7 +133,6 @@ def load_interpreter(model_path, device):
     raise ValueError("Invalid device. Choose either 'cpu', 'tpu', 'gpu', 'mps' or 'npu'.")
   return loaders[device](model_path)
 
-
 def get_output(interpreter, top_k, score_threshold):
   """Returns no more than top_k categories with score >= score_threshold."""
   scores = interpreter.get_tensor(interpreter.get_output_details()['index'])
@@ -146,7 +142,6 @@ def get_output(interpreter, top_k, score_threshold):
       if scores[i] >= score_threshold
   ]
   return sorted(categories, key=operator.itemgetter(1), reverse=True)
-
 
 def preprocess_frame(frame, target_shape, dtype):
   """Fallback für image_processing.reshape_and_rescale, falls edgetpu nicht installiert ist."""
@@ -160,7 +155,6 @@ def preprocess_frame(frame, target_shape, dtype):
     return (img.astype(np.float32) / 127.5) - 1.0
   return img.astype(dtype)
 
-
 def parse_args():
   parser = argparse.ArgumentParser(description='Real-time image classification', add_help=False)
   parser.add_argument('--model_path',type=str,required=True,help='Path to .tflite or .mlpackage model',)
@@ -172,7 +166,6 @@ def parse_args():
   parser.add_argument('--video_device',type=int,default=0,help='Index of video capture device',)
   parser.add_argument('--help',action='help',default=argparse.SUPPRESS,help='show this help message and exit',)
   return parser.parse_args()
-
 
 def main():
   args = parse_args()
