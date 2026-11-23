@@ -35,7 +35,7 @@ def load_mps_interpreter(model_path):
 
 def load_npu_interpreter(model_path):
     os.environ['ANE_VISIBLE_DEVICE'] = 'npu'
-	return ct.interpreter(model_path=model_path)
+	return tflite.interpreter(model_path=model_path)
         
 def get_output(interpreter, top_k, score_threshold):
     """Returns no more than top_k categories with score >= score_threshold."""
