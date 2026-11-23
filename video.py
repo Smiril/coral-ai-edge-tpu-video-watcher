@@ -23,6 +23,60 @@ try:
 except ImportError:
   image_processing = None
 
+try:
+  import axelera.runtime as ax_rt
+except ImportError:
+  ax_rt = None
+
+
+class AxeleraInterpreterAdapter:
+  """Simuliert die tflite.Interpreter-API für die Axelera Metis AIPU (.axm / .axmodel)."""
+
+  def __init__(self, model_path):
+    if ax_rt is None:
+      raise ImportError(
+          'axelera.runtime nicht gefunden (Voyager SDK aktivieren).'
+      )
+
+    axm_path = model_path.replace('.tflite', '.axm')
+    self.ctx = ax_rt.Context()
+    self.device = self.ctx.get_device(0)  # Erste Metis AIPU wählen
+    self.model = self.device.load_model(axm_path)
+    self.connection = self.model.create_connection()
+
+    input_info = self.model.inputs
+    self._shape = np.array(input_info.shape, dtype=np.int32)
+    self._input_tensor = None
+    self._output_tensor = None
+
+  def allocate_tensors(self):
+    pass
+
+  def get_input_details(self):
+    return [{
+        'index': 0,
+        'name': 'input',
+        'shape': self._shape,
+        'dtype': np.float32,
+    }]
+
+  def get_output_details(self):
+    return [{'index': 0, 'name': 'output', 'dtype': np.float32}]
+
+  def set_tensor(self, index, value):
+    self._input_tensor = np.ascontiguousarray(value, dtype=np.float32)
+
+  def invoke(self):
+    # Inferenz direkt auf den SRAM-Cores der Metis AIPU ausführen
+    outputs = self.connection.run([self._input_tensor])
+    out = np.array(outputs, dtype=np.float32)
+    if out.ndim == 1:
+      out = np.expand_dims(out, axis=0)
+    self._output_tensor = out
+
+  def get_tensor(self, index):
+    return self._output_tensor
+
 Category = collections.namedtuple('Category', ['id', 'score'])
 
 
@@ -128,6 +182,7 @@ def load_interpreter(model_path, device):
       'gpu': load_gpu_interpreter,
       'mps': load_mps_interpreter,
       'npu': load_npu_interpreter,
+      axelera': lambda p: AxeleraInterpreterAdapter(p)
   }
   if device not in loaders:
     raise ValueError("Invalid device. Choose either 'cpu', 'tpu', 'gpu', 'mps' or 'npu'.")
@@ -163,7 +218,7 @@ def parse_args():
   parser.add_argument('--width', type=int, default=3840, help='Width of video frame')
   parser.add_argument('--height', type=int, default=2160, help='Height of video frame')
   parser.add_argument('--fps', type=int, default=30,choices=['30', '60', '120', '240'],help='Video fps to use')
-  parser.add_argument('--device',type=str,default='cpu',choices=['cpu', 'tpu', 'gpu', 'mps', 'npu'],help='Device to use',)
+  parser.add_argument('--device',type=str,default='cpu',choices=['cpu', 'tpu', 'gpu', 'mps', 'npu', 'axelera'],help='Device to use',)
   parser.add_argument('--video_device',type=int,default=0,help='Index of video capture device',)
   parser.add_argument('--help',action='help',default=argparse.SUPPRESS,help='show this help message and exit',)
   return parser.parse_args()
