@@ -190,7 +190,7 @@ def main():
 
   target_fps = args.fps
   frame_duration = 1.0 / target_fps  # 0.0333 Sekunden (33.33 ms)
-  fps_history = collections.deque(maxlen=30)
+  fps_history = collections.deque(maxlen=args.fps)
 
   while True:
     loop_start = time.perf_counter()
