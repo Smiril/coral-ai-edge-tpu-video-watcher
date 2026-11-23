@@ -1,6 +1,7 @@
 #!/usr/bin/env python3.10
 import os
 import coremltools as ct
+import mlx.core as mx
 import argparse
 import cv2
 import numpy as np
@@ -30,11 +31,11 @@ def load_gpu_interpreter(model_path):
 	return tflite.interpreter(model_path=model_path)
 
 def load_mps_interpreter(model_path):
-    os.environ['METAL_VISIBLE_DEVICES'] = 'mps'
+    os.environ[mx.default_device()] = 'mps'
 	return tflite.interpreter(model_path=model_path)
 
 def load_npu_interpreter(model_path):
-    os.environ['CPU_AND_NE'] = 'npu'
+    os.environ[ct.ComputeUnit.CPU_AND_NE] = 'npu'
 	return tflite.interpreter(model_path=model_path)
         
 def get_output(interpreter, top_k, score_threshold):
@@ -69,10 +70,10 @@ def load_interpreter(model_path, device):
          os.environ['CUDA_VISIBLE_DEVICES'] = 'GPU:0,1,2,3,4,5,6,7'
          return tflite.Interpreter(model_path=model_path)
     elif device == 'mps':
-         os.environ['METAL_VISIBLE_DEVICES'] = 'MPS:0'
+         os.environ[mx.default_device()] = 'MPS:0'
          return tflite.Interpreter(model_path=model_path)
     elif device == 'npu':
-         os.environ['CPU_AND_NE'] = 'CPU:1'
+         os.environ[ct.ComputeUnit.CPU_AND_NE] = 'CPU:1'
          return tflite.Interpreter(model_path=model_path)
     else:
         raise ValueError("Invalid device. Choose either 'cpu', 'tpu', 'gpu', 'mps' or 'npu'.")
