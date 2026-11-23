@@ -222,9 +222,7 @@ def main():
           else f'ID {top_result.id}'
       )
       label_text = f'{label}: {top_result.score:.2f} ({args.device.upper()})'
-      cv2.putText(
-          frame, label_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2
-      )
+      cv2.putText(frame, label_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
     cv2.imshow('Frame', frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
