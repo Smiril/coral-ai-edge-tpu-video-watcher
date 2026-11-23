@@ -21,6 +21,8 @@ python video.py --model_path model.tflite --label_path labels.txt --device tpu -
 
 ** • --device mps / --device npu → use model.mlpackage (for Apple MetalGPU AND Neural Engine) **
 
+** • --device axelera → use model.onnx model.axm (for Axelera Neural Engine) **
+
 
 ## Links
 
