@@ -1,5 +1,6 @@
 #!/usr/bin/env python3.10
 import os
+import coremltools as ct
 import argparse
 import cv2
 import numpy as np
@@ -28,14 +29,14 @@ def load_gpu_interpreter(model_path):
     os.environ['CUDA_VISIBLE_DEVICES'] = 'gpu'
 	return tflite.interpreter(model_path=model_path)
 
-def load_npu_interpreter(model_path):
-    os.environ['plaidML'] = 'npu'
-	return tflite.interpreter(model_path=model_path)
-    
 def load_mps_interpreter(model_path):
     os.environ['METAL_VISIBLE_DEVICES'] = 'mps'
 	return tflite.interpreter(model_path=model_path)
-    
+
+def load_npu_interpreter(model_path):
+    os.environ['ANE_VISIBLE_DEVICE'] = 'npu'
+	return ct.interpreter(model_path=model_path)
+        
 def get_output(interpreter, top_k, score_threshold):
     """Returns no more than top_k categories with score >= score_threshold."""
     scores = interpreter.get_tensor(interpreter.get_output_details()[0]['index'])
@@ -71,7 +72,7 @@ def load_interpreter(model_path, device):
          os.environ['METAL_VISIBLE_DEVICES'] = 'MPS:0'
          return tflite.Interpreter(model_path=model_path)
     elif device == 'npu':
-         os.environ['plaidML'] = 'CPU:1'
+         os.environ['ANE_VISIBLE_DEVICE'] = 'CPU:1'
          return tflite.Interpreter(model_path=model_path)
     else:
         raise ValueError("Invalid device. Choose either 'cpu', 'tpu', 'gpu', 'mps' or 'npu'.")
