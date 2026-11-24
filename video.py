@@ -181,7 +181,7 @@ def load_interpreter(model_path, device):
       'gpu': load_gpu_interpreter,
       'mps': load_mps_interpreter,
       'npu': load_npu_interpreter,
-      axelera': lambda p: AxeleraInterpreterAdapter(p)
+     'axelera': lambda p: AxeleraInterpreterAdapter(p)
   }
   if device not in loaders:
     raise ValueError("Invalid device. Choose either 'cpu', 'tpu', 'gpu', 'mps' or 'npu'.")
