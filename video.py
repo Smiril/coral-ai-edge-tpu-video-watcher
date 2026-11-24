@@ -118,12 +118,7 @@ class CoreMLInterpreterAdapter:
     pass
 
   def get_input_details(self):
-    return [{
-        'index': 0,
-        'name': self._input_name,
-        'shape': self._shape,
-        'dtype': np.float32,
-    }]
+    return [{  'index': 0, 'name': self._input_name,   'shape': self._shape,  'dtype': np.float32  }]
 
   def get_output_details(self):
     return [{'index': 0, 'name': self._output_name, 'dtype': np.float32}]
