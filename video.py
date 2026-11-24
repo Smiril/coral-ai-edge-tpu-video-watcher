@@ -54,12 +54,7 @@ class AxeleraInterpreterAdapter:
     pass
 
   def get_input_details(self):
-    return [{
-        'index': 0,
-        'name': 'input',
-        'shape': self._shape,
-        'dtype': np.float32,
-    }]
+    return [{'index': 0, 'name': 'input', 'shape': self._shape,'dtype': np.float32 }]
 
   def get_output_details(self):
     return [{'index': 0, 'name': 'output', 'dtype': np.float32}]
